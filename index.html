@@ -63,7 +63,7 @@
     </form>
   </div>
 
-  <!-- Firebase & Google Sheets Integration -->
+  <!-- Firebase & Make Integration -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -81,8 +81,8 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // ✅ Using Zapier Webhook URL
-    const zapierWebhookURL = "https://cors-anywhere.herokuapp.com/https://hooks.zapier.com/hooks/catch/22893193/27ujsqm/";
+    // ✅ Replace this with your actual Make Webhook URL
+    const makeWebhookURL = "https://hook.eu2.make.com/unpv76yf3oa6q5hh5oaiqf84t75fh7vf"; // Replace this
 
     const checkinInput = document.getElementById("checkin");
     const checkoutInput = document.getElementById("checkout");
@@ -120,8 +120,8 @@
         });
         console.log("Saved to Firebase");
 
-        // Send to Zapier (Zapier will send data to Google Sheets)
-        const response = await fetch(zapierWebhookURL, {
+        // Send to Make webhook
+        const response = await fetch(makeWebhookURL, {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
@@ -129,10 +129,7 @@
           body: JSON.stringify(bookingDetails)
         });
 
-        const result = await response.json();
-        console.log("Zapier response:", result);
-
-        if (result.result === "success") {
+        if (response.ok) {
           alert("Booking successful!");
           window.location.href = "thankyou.html";
         } else {
