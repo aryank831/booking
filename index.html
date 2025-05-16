@@ -1,42 +1,81 @@
 <!DOCTYPE html>
 <html>
-<head><title>Hotel Owner Login</title></head>
+<head>
+  <title>Hotel Owner Login</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 400px;
+      margin: 3rem auto;
+      padding: 2rem;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+    }
+    input, button {
+      width: 100%;
+      margin: 0.5rem 0;
+      padding: 0.8rem;
+      font-size: 1rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #1e40af;
+    }
+    #error {
+      color: red;
+      margin-top: 1rem;
+      min-height: 1.5rem;
+    }
+  </style>
+</head>
 <body>
   <h2>Login</h2>
   <input id="email" placeholder="Email" type="email" />
   <input id="password" placeholder="Password" type="password" />
   <button onclick="login()">Login</button>
-  <p id="error" style="color:red;"></p>
+  <p id="error"></p>
 
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js"></script>
-  <script>
-    // Your Firebase config here
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
     const firebaseConfig = {
       apiKey: "YOUR_API_KEY",
       authDomain: "YOUR_PROJECT.firebaseapp.com",
       projectId: "YOUR_PROJECT_ID",
-      // other config...
+      // ...other config properties
     };
 
-    // Initialize Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
 
     async function login() {
-      const email = document.getElementById("email").value;
+      const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
       const errorP = document.getElementById("error");
       errorP.textContent = "";
 
+      if (!email || !password) {
+        errorP.textContent = "Please enter email and password.";
+        return;
+      }
+
       try {
-        await auth.signInWithEmailAndPassword(email, password);
-        // Login success - redirect to dashboard
+        await signInWithEmailAndPassword(auth, email, password);
         window.location.href = "dashboard.html";
-      } catch (err) {
-        errorP.textContent = err.message;
+      } catch (error) {
+        errorP.textContent = error.message;
       }
     }
+
+    window.login = login; // expose to global scope for button onclick
   </script>
 </body>
 </html>
