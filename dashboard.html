@@ -50,7 +50,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"></script>
 
   <script>
-    // Replace with your actual Firebase config
+    // Your Firebase config here
     const firebaseConfig = {
       apiKey: "AIzaSyD3niixQAI4w1GwTDarW9UaG__l2MLqSb8",
       authDomain: "hotel-booking-aa81d.firebaseapp.com",
@@ -62,27 +62,31 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    // Protect the dashboard (only show if logged in)
-    auth.onAuthStateChanged(async user => {
+    auth.onAuthStateChanged(user => {
       if (!user) {
-        window.location.href = "login.html"; // redirect if not logged in
+        // Redirect to login if not authenticated
+        window.location.href = "login.html";
       } else {
-        const snapshot = await db.collection("bookings").get();
         const tableBody = document.querySelector("#bookingTable tbody");
-        tableBody.innerHTML = "";
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          const row = `
-            <tr>
-              <td>${data.name || ''}</td>
-              <td>${data.email || ''}</td>
-              <td>${data.phone || ''}</td>
-              <td>${data.roomType || ''}</td>
-              <td>${data.checkIn || ''}</td>
-              <td>${data.checkOut || ''}</td>
-            </tr>
-          `;
-          tableBody.innerHTML += row;
+
+        // Listen for real-time updates in 'bookings' collection
+        db.collection("bookings").onSnapshot(snapshot => {
+          tableBody.innerHTML = ""; // Clear existing rows
+
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            const row = `
+              <tr>
+                <td>${data.name || ''}</td>
+                <td>${data.email || ''}</td>
+                <td>${data.phone || ''}</td>
+                <td>${data.roomType || ''}</td>
+                <td>${data.checkIn || ''}</td>
+                <td>${data.checkOut || ''}</td>
+              </tr>
+            `;
+            tableBody.innerHTML += row;
+          });
         });
       }
     });
