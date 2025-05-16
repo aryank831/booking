@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Hotel Dashboard</title>
+  <title>Hotel Booking Dashboard</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -44,13 +44,13 @@
     </tbody>
   </table>
 
-  <!-- Firebase SDKs (v8) -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"></script>
 
   <script>
-    // Your Firebase config
+    // Your Firebase config here
     const firebaseConfig = {
       apiKey: "AIzaSyD3niixQAI4w1GwTDarW9UaG__l2MLqSb8",
       authDomain: "hotel-booking-aa81d.firebaseapp.com",
@@ -58,7 +58,7 @@
     };
 
     // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
+    const app = firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
 
@@ -70,16 +70,23 @@
         const snapshot = await db.collection("bookings").get();
         const tableBody = document.querySelector("#bookingTable tbody");
         tableBody.innerHTML = "";
+
         snapshot.forEach(doc => {
           const data = doc.data();
+          console.log("Booking Doc:", doc.id, data);  // Debug: log each doc data
+
+          // Convert Firestore timestamps to readable date strings if needed
+          const checkInDate = data.checkIn && data.checkIn.toDate ? data.checkIn.toDate().toLocaleDateString() : (data.checkIn || '');
+          const checkOutDate = data.checkOut && data.checkOut.toDate ? data.checkOut.toDate().toLocaleDateString() : (data.checkOut || '');
+
           const row = `
             <tr>
               <td>${data.name || ''}</td>
               <td>${data.email || ''}</td>
               <td>${data.phone || ''}</td>
               <td>${data.roomType || ''}</td>
-              <td>${data.checkIn || ''}</td>
-              <td>${data.checkOut || ''}</td>
+              <td>${checkInDate}</td>
+              <td>${checkOutDate}</td>
             </tr>
           `;
           tableBody.innerHTML += row;
