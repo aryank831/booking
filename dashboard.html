@@ -3,27 +3,11 @@
 <head>
   <title>Hotel Dashboard</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1em;
-    }
-    th, td {
-      border: 1px solid #ddd;
-      padding: 12px;
-      text-align: left;
-    }
-    th {
-      background-color: #333;
-      color: white;
-    }
-    #logout {
-      float: right;
-    }
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1em; }
+    th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+    th { background-color: #333; color: white; }
+    #logout { float: right; }
   </style>
 </head>
 <body>
@@ -62,16 +46,20 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
+    // Redirect if not logged in, else listen for realtime booking updates
     auth.onAuthStateChanged(user => {
       if (!user) {
-        // Redirect to login if not authenticated
         window.location.href = "login.html";
-      } else {
-        const tableBody = document.querySelector("#bookingTable tbody");
+        return;
+      }
 
-        // Listen for real-time updates in 'bookings' collection
-        db.collection("bookings").onSnapshot(snapshot => {
-          tableBody.innerHTML = ""; // Clear existing rows
+      const tableBody = document.querySelector("#bookingTable tbody");
+
+      // Listen to realtime updates on bookings collection
+      db.collection("bookings")
+        .orderBy("checkIn")  // optional ordering
+        .onSnapshot(snapshot => {
+          tableBody.innerHTML = "";  // clear previous rows
 
           snapshot.forEach(doc => {
             const data = doc.data();
@@ -87,10 +75,18 @@
             `;
             tableBody.innerHTML += row;
           });
+
+          // If no bookings
+          if (snapshot.empty) {
+            tableBody.innerHTML = "<tr><td colspan='6'>No bookings yet</td></tr>";
+          }
+        }, err => {
+          console.error("Error fetching bookings:", err);
+          tableBody.innerHTML = `<tr><td colspan="6">Error loading bookings</td></tr>`;
         });
-      }
     });
 
+    // Logout button handler
     document.getElementById("logout").addEventListener("click", async () => {
       await auth.signOut();
       window.location.href = "login.html";
