@@ -1,29 +1,75 @@
 <!DOCTYPE html>
 <html>
-<head><title>Dashboard</title></head>
+<head>
+  <title>Hotel Dashboard</title>
+</head>
 <body>
-  <h1>Welcome to the Hotel Dashboard</h1>
+  <h2>Hotel Booking Dashboard</h2>
   <button onclick="logout()">Logout</button>
+  <table border="1">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Phone</th>
+        <th>Email</th>
+        <th>Room Type</th>
+        <th>Check-In</th>
+        <th>Check-Out</th>
+        <th>Payment Status</th>
+      </tr>
+    </thead>
+    <tbody id="bookingData">
+      <!-- Booking data rows will be added here -->
+    </tbody>
+  </table>
 
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"></script>
   <script>
     const firebaseConfig = {
-      // same config
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
     };
+
+    // Initialize Firebase
     const app = firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
+    const db = firebase.firestore();
 
-    // Check user logged in
+    // Redirect to login if not authenticated
     auth.onAuthStateChanged(user => {
       if (!user) {
-        window.location.href = 'login.html'; // redirect if not logged in
+        window.location.href = "login.html";
+      } else {
+        loadBookings();
       }
     });
 
+    async function loadBookings() {
+      const tbody = document.getElementById('bookingData');
+      const snapshot = await db.collection("bookings").get();
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const row = `
+          <tr>
+            <td>${data.name}</td>
+            <td>${data.phone}</td>
+            <td>${data.email}</td>
+            <td>${data.roomType}</td>
+            <td>${data.checkIn}</td>
+            <td>${data.checkOut}</td>
+            <td>${data.payment || 'Pending'}</td>
+          </tr>`;
+        tbody.innerHTML += row;
+      });
+    }
+
     function logout() {
-      auth.signOut();
-      window.location.href = 'login.html';
+      auth.signOut().then(() => {
+        window.location.href = "login.html";
+      });
     }
   </script>
 </body>
