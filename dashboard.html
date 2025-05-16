@@ -2,31 +2,55 @@
 <html>
 <head>
   <title>Hotel Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1em;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #333;
+      color: white;
+    }
+    #logout {
+      float: right;
+    }
+  </style>
 </head>
 <body>
-  <h2>Hotel Booking Dashboard</h2>
-  <button onclick="logout()">Logout</button>
-  <table border="1">
+  <h2>Hotel Booking Dashboard <button id="logout">Logout</button></h2>
+  <table id="bookingTable">
     <thead>
       <tr>
         <th>Name</th>
-        <th>Phone</th>
         <th>Email</th>
+        <th>Phone</th>
         <th>Room Type</th>
         <th>Check-In</th>
         <th>Check-Out</th>
-        <th>Payment Status</th>
       </tr>
     </thead>
-    <tbody id="bookingData">
-      <!-- Booking data rows will be added here -->
+    <tbody>
+      <!-- Bookings will be inserted here -->
     </tbody>
   </table>
 
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"></script>
+
   <script>
+    // Replace with your actual Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyD3niixQAI4w1GwTDarW9UaG__l2MLqSb8",
       authDomain: "hotel-booking-aa81d.firebaseapp.com",
@@ -38,39 +62,35 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    // Redirect to login if not authenticated
-    auth.onAuthStateChanged(user => {
+    // Protect the dashboard (only show if logged in)
+    auth.onAuthStateChanged(async user => {
       if (!user) {
-        window.location.href = "login.html";
+        window.location.href = "login.html"; // redirect if not logged in
       } else {
-        loadBookings();
+        const snapshot = await db.collection("bookings").get();
+        const tableBody = document.querySelector("#bookingTable tbody");
+        tableBody.innerHTML = "";
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          const row = `
+            <tr>
+              <td>${data.name || ''}</td>
+              <td>${data.email || ''}</td>
+              <td>${data.phone || ''}</td>
+              <td>${data.roomType || ''}</td>
+              <td>${data.checkIn || ''}</td>
+              <td>${data.checkOut || ''}</td>
+            </tr>
+          `;
+          tableBody.innerHTML += row;
+        });
       }
     });
 
-    async function loadBookings() {
-      const tbody = document.getElementById('bookingData');
-      const snapshot = await db.collection("bookings").get();
-      snapshot.forEach(doc => {
-        const data = doc.data();
-        const row = `
-          <tr>
-            <td>${data.name}</td>
-            <td>${data.phone}</td>
-            <td>${data.email}</td>
-            <td>${data.roomType}</td>
-            <td>${data.checkIn}</td>
-            <td>${data.checkOut}</td>
-            <td>${data.payment || 'Pending'}</td>
-          </tr>`;
-        tbody.innerHTML += row;
-      });
-    }
-
-    function logout() {
-      auth.signOut().then(() => {
-        window.location.href = "login.html";
-      });
-    }
+    document.getElementById("logout").addEventListener("click", async () => {
+      await auth.signOut();
+      window.location.href = "login.html";
+    });
   </script>
 </body>
 </html>
