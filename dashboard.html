@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head><title>Dashboard</title></head>
+<body>
+  <h1>Welcome to the Hotel Dashboard</h1>
+  <button onclick="logout()">Logout</button>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js"></script>
+  <script>
+    const firebaseConfig = {
+      // same config
+    };
+    const app = firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    // Check user logged in
+    auth.onAuthStateChanged(user => {
+      if (!user) {
+        window.location.href = 'login.html'; // redirect if not logged in
+      }
+    });
+
+    function logout() {
+      auth.signOut();
+      window.location.href = 'login.html';
+    }
+  </script>
+</body>
+</html>
